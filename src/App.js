@@ -1,39 +1,46 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
-import GameDetailPage from './pages/GameDetailPage';
-import LibraryPage from './pages/LibraryPage';
-import MyGamesPage from './pages/MyGamesPage';
-import UploadGamePage from './pages/UploadGamePage';
-import PurchaseHistoryPage from './pages/PurchaseHistoryPage';
-import SalesHistoryPage from './pages/SalesHistoryPage';
+import PrivateRoute from './components/PrivateRoute';
+import Home from './pages/Home';
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import GameList from './pages/Games/GameList';
+import GameDetail from './pages/Games/GameDetail';
+import CreateGame from './pages/Games/CreateGame';
+import MyGames from './pages/Games/MyGames';
+import EditGame from './pages/Games/EditGame';
+import Profile from './pages/Users/Profile';
+import Library from './pages/Users/Library';
+import PurchaseHistory from './pages/Users/PurchaseHistory';
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/games/:id" element={<GameDetailPage />} />
-          
-          <Route element={<PrivateRoute />}>
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/library" element={<LibraryPage />} />
-            <Route path="/my-games" element={<MyGamesPage />} />
-            <Route path="/upload" element={<UploadGamePage />} />
-            <Route path="/purchase-history" element={<PurchaseHistoryPage />} />
-            <Route path="/sales-history/:id" element={<SalesHistoryPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+        <div className="container mt-5">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth/login" element={<Login />} />
+            <Route path="/auth/register" element={<Register />} />
+            
+            {/* Public game routes */}
+            <Route path="/games" element={<GameList />} />
+            <Route path="/games/:id" element={<GameDetail />} />
+            
+            {/* Protected routes */}
+            <Route element={<PrivateRoute />}>
+              <Route path="/games/create" element={<CreateGame />} />
+              <Route path="/games/my-games" element={<MyGames />} />
+              <Route path="/games/:id/edit" element={<EditGame />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/library" element={<Library />} />
+              <Route path="/history" element={<PurchaseHistory />} />
+            </Route>
+          </Routes>
+        </div>
+      </Router>
     </AuthProvider>
   );
 }
