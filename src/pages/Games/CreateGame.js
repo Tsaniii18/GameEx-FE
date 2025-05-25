@@ -3,19 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { createGame } from '../../api/games';
 
 const CreateGame = () => {
- const [formData, setFormData] = useState({
-  nama: '',
-  gambar: '',
-  harga: '',
-  tag: '',
-  deskripsi: ''
-});
+  const [formData, setFormData] = useState({
+    nama: '',
+    harga: '',
+    tag: '',
+    deskripsi: ''
+  });
+  const [gambarFile, setGambarFile] = useState(null);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    setGambarFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -28,10 +32,18 @@ const CreateGame = () => {
         throw new Error('Price must be a positive number');
       }
 
-      await createGame({
-        ...formData,
-        harga: numericPrice
-      });
+      if (!gambarFile) {
+        throw new Error('Please select an image file');
+      }
+
+      const formDataToSend = new FormData();
+      formDataToSend.append('nama', formData.nama);
+      formDataToSend.append('harga', numericPrice);
+      formDataToSend.append('tag', formData.tag);
+      formDataToSend.append('deskripsi', formData.deskripsi);
+      formDataToSend.append('gambar', gambarFile);
+
+      await createGame(formDataToSend);
       navigate('/games/my-games');
     } catch (err) {
       setError(err.response?.data?.msg || err.message || 'Failed to create game');
@@ -47,19 +59,20 @@ const CreateGame = () => {
           
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label className="label">Image URL</label>
+              <label className="label">Game Image</label>
               <div className="control">
                 <input
                   className="input"
-                  type="text"
+                  type="file"
                   name="gambar"
-                  value={formData.gambar}
-                  onChange={handleChange}
+                  onChange={handleFileChange}
+                  accept="image/*"
                   required
                 />
               </div>
             </div>
             
+            {/* Rest of the form fields remain the same */}
             <div className="field">
               <label className="label">Game Name</label>
               <div className="control">
@@ -74,7 +87,7 @@ const CreateGame = () => {
               </div> 
             </div>
 
-            <div className="field">
+             <div className="field">
               <label className="label">Price</label>
               <div className="control">
                 <input
@@ -89,7 +102,7 @@ const CreateGame = () => {
                 />
               </div>
             </div>
-            
+
             <div className="field">
               <label className="label">Tags (comma separated)</label>
               <div className="control">
@@ -103,7 +116,7 @@ const CreateGame = () => {
                 />
               </div>
             </div>
-            
+
             <div className="field">
               <label className="label">Description</label>
               <div className="control">
