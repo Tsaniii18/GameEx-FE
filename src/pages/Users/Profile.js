@@ -3,8 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { updateProfile, deleteAccount } from '../../api/users';
 
 const Profile = () => {
-  const { user: authUser, logout } = useAuth();
-  const [user, setUser] = useState({
+  const { user: authUser, logout, setUser: setAuthUser } = useAuth();
+  const [formData, setFormData] = useState({
     username: '',
     email: '',
     foto_profil: '',
@@ -16,7 +16,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (authUser) {
-      setUser(prev => ({
+      setFormData(prev => ({
         ...prev,
         username: authUser.username || '',
         email: authUser.email || '',
@@ -27,7 +27,7 @@ const Profile = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -35,23 +35,34 @@ const Profile = () => {
     setError('');
     setMessage('');
     
-    if (user.password && user.password !== user.confirmPassword) {
+    if (formData.password && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
     try {
       const updateData = {
-        username: user.username,
-        email: user.email,
-        foto_profil: user.foto_profil,
-        ...(user.password && { password: user.password })
+        username: formData.username,
+        email: formData.email,
+        foto_profil: formData.foto_profil,
+        ...(formData.password && { password: formData.password })
       };
 
-      await updateProfile(updateData);
+      const response = await updateProfile(updateData);
       setMessage('Profile updated successfully');
+      
+      // Update auth context with new user data
+      if (authUser) {
+        setAuthUser({
+          ...authUser,
+          username: formData.username,
+          email: formData.email,
+          foto_profil: formData.foto_profil
+        });
+      }
     } catch (err) {
       setError(err.response?.data?.msg || 'Failed to update profile');
+      console.error('Profile update error:', err);
     }
   };
 
@@ -61,7 +72,7 @@ const Profile = () => {
         await deleteAccount();
         logout();
       } catch (err) {
-        setError('Failed to delete account');
+        setError(err.response?.data?.msg || 'Failed to delete account');
       }
     }
   };
@@ -70,10 +81,21 @@ const Profile = () => {
     <div className="columns is-centered mt-5">
       <div className="column is-half">
         <div className="box">
-          <h1 className="title has-text-centered">Profile</h1>
+          <h1 className="title has-text-centered">Profile Settings</h1>
           
-          {message && <div className="notification is-success">{message}</div>}
-          {error && <div className="notification is-danger">{error}</div>}
+          {message && (
+            <div className="notification is-success">
+              <button className="delete" onClick={() => setMessage('')}></button>
+              {message}
+            </div>
+          )}
+          
+          {error && (
+            <div className="notification is-danger">
+              <button className="delete" onClick={() => setError('')}></button>
+              {error}
+            </div>
+          )}
           
           <form onSubmit={handleSubmit}>
             <div className="field">
@@ -83,7 +105,7 @@ const Profile = () => {
                   className="input"
                   type="text"
                   name="username"
-                  value={user.username}
+                  value={formData.username}
                   onChange={handleChange}
                   required
                 />
@@ -97,7 +119,7 @@ const Profile = () => {
                   className="input"
                   type="email"
                   name="email"
-                  value={user.email}
+                  value={formData.email}
                   onChange={handleChange}
                   required
                 />
@@ -109,12 +131,18 @@ const Profile = () => {
               <div className="control">
                 <input
                   className="input"
-                  type="text"
+                  type="url"
                   name="foto_profil"
-                  value={user.foto_profil}
+                  value={formData.foto_profil}
                   onChange={handleChange}
+                  placeholder="https://example.com/profile.jpg"
                 />
               </div>
+              {formData.foto_profil && (
+                <figure className="image is-64x64 mt-2">
+                  <img src={formData.foto_profil} alt="Profile preview" className="is-rounded" />
+                </figure>
+              )}
             </div>
             
             <div className="field">
@@ -124,8 +152,9 @@ const Profile = () => {
                   className="input"
                   type="password"
                   name="password"
-                  value={user.password}
+                  value={formData.password}
                   onChange={handleChange}
+                  minLength="6"
                 />
               </div>
             </div>
@@ -137,15 +166,20 @@ const Profile = () => {
                   className="input"
                   type="password"
                   name="confirmPassword"
-                  value={user.confirmPassword}
+                  value={formData.confirmPassword}
                   onChange={handleChange}
+                  minLength="6"
                 />
               </div>
             </div>
             
             <div className="field">
               <div className="control">
-                <button className="button is-primary is-fullwidth" type="submit">
+                <button 
+                  className="button is-primary is-fullwidth" 
+                  type="submit"
+                  disabled={!formData.username || !formData.email}
+                >
                   Update Profile
                 </button>
               </div>
@@ -158,7 +192,7 @@ const Profile = () => {
                 className="button is-danger is-fullwidth" 
                 onClick={handleDeleteAccount}
               >
-                Delete Account
+                Delete My Account
               </button>
             </div>
           </div>

@@ -2,7 +2,7 @@ import api from './axios';
 
 export const updateProfile = (userData) => api.put('/users/profile', userData);
 export const buyGame = (gameId) => api.post('/users/buy', { gameId });
-export const updateGameStatus = (gameId, status) => api.patch(`/users/library/${gameId}`, { status });
+export const updateGameStatus = (gameId, {status}) => api.patch(`/users/library/${gameId}`, { status });
 export const deleteFromLibrary = (gameId) => api.delete(`/users/library/${gameId}`);
 export const getPurchaseHistory = () => api.get('/users/history');
 export const getMyGames = () => api.get('/users/my-games');
