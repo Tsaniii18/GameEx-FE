@@ -2,8 +2,8 @@ import axios from 'axios';
 import { refreshToken } from './auth';
 
 const api = axios.create({
-  // baseURL: 'https://game-ex-be-722144796089.us-central1.run.app',
-   baseURL: 'http://localhost:5000',
+  baseURL: 'https://game-ex-be-722144796089.us-central1.run.app',
+  //  baseURL: 'http://localhost:5000',
   withCredentials: true,
 });
 
