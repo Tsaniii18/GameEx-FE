@@ -25,37 +25,56 @@ const PurchaseHistory = () => {
   if (error) return <div className="notification is-danger">{error}</div>;
 
   return (
-    <div className="container">
-      <h1 className="title">Purchase History</h1>
-      
+    <div className="container mt-5">
+      <h1 className="title mb-4">Purchase History</h1>
+
       {history.length === 0 ? (
-        <div className="notification is-info">
+        <div className="notification is-info has-text-centered">
           You haven't made any purchases yet.
         </div>
       ) : (
-        <div className="table-container">
-          <table className="table is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th>Game</th>
-                <th>Original Price</th>
-                <th>Discount</th>
-                <th>Final Price</th>
-                <th>Purchase Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td>{transaction.Game.deskripsi}</td>
-                  <td>${transaction.harga_awal.toFixed(2)}</td>
-                  <td>{transaction.discount}%</td>
-                  <td>${transaction.harga_discount.toFixed(2)}</td>
-                  <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="card">
+          <header className="card-header">
+            <p className="card-header-title">Your Transactions</p>
+          </header>
+          <div className="card-content">
+            <div className="table-container">
+              <table className="table is-fullwidth is-striped is-hoverable is-bordered">
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th className="has-text-right">Original Price</th>
+                    <th className="has-text-centered">Discount</th>
+                    <th className="has-text-right">Final Price</th>
+                    <th className="has-text-centered">Payment Method</th>
+                    <th className="has-text-centered">Purchase Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((transaction) => (
+                    <tr key={transaction.id}>
+                      <td>{transaction.Game.nama}</td>
+                      <td className="has-text-right">
+                        ${transaction.harga_awal.toFixed(2)}
+                      </td>
+                      <td className="has-text-centered">{transaction.discount}%</td>
+                      <td className="has-text-right">
+                        ${transaction.harga_discount.toFixed(2)}
+                      </td>
+                      <td className="has-text-centered">{transaction.metode_pembayaran || 'N/A'}</td>
+                      <td className="has-text-centered">
+                        {new Date(transaction.createdAt).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

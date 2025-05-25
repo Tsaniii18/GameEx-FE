@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
   const { user } = useAuth();
+  console.log(user)
 
   return (
     <div className="container has-text-centered mt-6">

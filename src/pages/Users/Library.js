@@ -27,10 +27,10 @@ const Library = () => {
   }, []);
 
   const toggleStatus = async (gameId, currentStatus) => {
-    const newStatus = currentStatus === 'belum' ? 'terinstall' : 'belum';
+    const newStatus = currentStatus === 'notinstalled' ? 'terinstall' : 'notinstalled';
     try {
       await updateGameStatus(gameId, { status: newStatus });
-      setLibrary(prev => prev.map(item => 
+      setLibrary(prev => prev.map(item =>
         item.game_id === gameId ? { ...item, status: newStatus } : item
       ));
     } catch (err) {
@@ -56,7 +56,7 @@ const Library = () => {
   return (
     <div className="container">
       <h1 className="title">My Library</h1>
-      
+
       {library.length === 0 ? (
         <div className="notification is-info">
           Your library is empty. <Link to="/games">Browse games</Link> to add some!
@@ -78,30 +78,33 @@ const Library = () => {
                       <p className="subtitle is-6">{item.Game.deskripsi}</p>
                     </div>
                   </div>
-                  
+
                   <div className="field">
-                    <label className="label">Installation Status</label>
+                    <label className="label">
+                      Installation Status: {item.status === 'terinstall' ? 'Installed' : 'Not Installed'}
+                    </label>
                     <div className="control">
                       <button
-                        className={`button is-small ${item.status === 'terinstall' ? 'is-success' : 'is-warning'}`}
+                        className={`button is-small ${item.status === 'terinstall' ? 'is-danger' : 'is-success'}`}
                         onClick={() => toggleStatus(item.game_id, item.status)}
                       >
-                        {item.status === 'terinstall' ? '✓ Installed' : 'Not Installed'}
+                        {item.status === 'terinstall' ? 'Uninstall' : 'Install'}
                       </button>
                     </div>
                     <p className="help">
                       Last updated: {new Date(item.updatedAt).toLocaleString()}
                     </p>
                   </div>
-                  
+
+
                   <div className="buttons mt-3">
-                    <button 
+                    <button
                       className="button is-danger is-small"
                       onClick={() => handleDelete(item.game_id)}
                     >
                       Remove from Library
                     </button>
-                    <Link 
+                    <Link
                       to={`/games/${item.game_id}`}
                       className="button is-info is-small"
                     >

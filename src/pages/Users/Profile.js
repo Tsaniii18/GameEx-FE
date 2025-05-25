@@ -34,7 +34,7 @@ const Profile = () => {
     e.preventDefault();
     setError('');
     setMessage('');
-    
+
     if (formData.password && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -49,10 +49,10 @@ const Profile = () => {
       };
 
       const response = await updateProfile(updateData);
-      setMessage('Profile updated successfully');
-      
-      // Update auth context with new user data
-      if (authUser) {
+      setMessage(response.data.msg || 'Profile updated successfully');
+
+    if (authUser) {
+      setAuthUser(response.data.user);
         setAuthUser({
           ...authUser,
           username: formData.username,
@@ -82,21 +82,34 @@ const Profile = () => {
       <div className="column is-half">
         <div className="box">
           <h1 className="title has-text-centered">Profile Settings</h1>
-          
+
+          {/* Profile picture preview */}
+          {formData.foto_profil && (
+            <div className="has-text-centered mb-4">
+              <figure className="image is-128x128 is-inline-block">
+                <img
+                  src={formData.foto_profil}
+                  alt="Profile preview"
+                  className="is-rounded"
+                />
+              </figure>
+            </div>
+          )}
+
           {message && (
             <div className="notification is-success">
               <button className="delete" onClick={() => setMessage('')}></button>
               {message}
             </div>
           )}
-          
+
           {error && (
             <div className="notification is-danger">
               <button className="delete" onClick={() => setError('')}></button>
               {error}
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit}>
             <div className="field">
               <label className="label">Username</label>
@@ -111,7 +124,7 @@ const Profile = () => {
                 />
               </div>
             </div>
-            
+
             <div className="field">
               <label className="label">Email</label>
               <div className="control">
@@ -125,7 +138,7 @@ const Profile = () => {
                 />
               </div>
             </div>
-            
+
             <div className="field">
               <label className="label">Profile Picture URL</label>
               <div className="control">
@@ -138,13 +151,8 @@ const Profile = () => {
                   placeholder="https://example.com/profile.jpg"
                 />
               </div>
-              {formData.foto_profil && (
-                <figure className="image is-64x64 mt-2">
-                  <img src={formData.foto_profil} alt="Profile preview" className="is-rounded" />
-                </figure>
-              )}
             </div>
-            
+
             <div className="field">
               <label className="label">New Password (leave blank to keep current)</label>
               <div className="control">
@@ -158,7 +166,7 @@ const Profile = () => {
                 />
               </div>
             </div>
-            
+
             <div className="field">
               <label className="label">Confirm Password</label>
               <div className="control">
@@ -172,11 +180,11 @@ const Profile = () => {
                 />
               </div>
             </div>
-            
+
             <div className="field">
               <div className="control">
-                <button 
-                  className="button is-primary is-fullwidth" 
+                <button
+                  className="button is-primary is-fullwidth"
                   type="submit"
                   disabled={!formData.username || !formData.email}
                 >
@@ -185,11 +193,11 @@ const Profile = () => {
               </div>
             </div>
           </form>
-          
+
           <div className="field mt-5">
             <div className="control">
-              <button 
-                className="button is-danger is-fullwidth" 
+              <button
+                className="button is-danger is-fullwidth"
                 onClick={handleDeleteAccount}
               >
                 Delete My Account

@@ -10,23 +10,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        // const decoded = jwtDecode(token);
-        const res = await getProfile();
-        setUser(res.data);
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          const decoded = jwtDecode(token);
+          const res = await getProfile(decoded.userId);
+          setUser(res.data);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Auth check error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  checkAuth();
-}, []);
+    checkAuth();
+  }, []);
 
 
   const login = async (email, password) => {
@@ -34,7 +34,8 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/login', { email, password });
       localStorage.setItem('accessToken', response.data.accessToken);
       const decoded = jwtDecode(response.data.accessToken);
-      setUser(decoded);
+      const res = await getProfile(decoded.userId)  ;
+      setUser(res.data);
       return { success: true };
     } catch (error) {
       return { success: false, message: error.response?.data?.msg || 'Login failed' };

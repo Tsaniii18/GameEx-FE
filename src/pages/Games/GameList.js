@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { getAllGames } from '../../api/games';
 import GameCard from '../../components/GameCard';
 
