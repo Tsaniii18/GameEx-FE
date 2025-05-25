@@ -34,7 +34,7 @@ const Library = () => {
         item.game_id === gameId ? { ...item, status: newStatus } : item
       ));
     } catch (err) {
-      setError('Failed to update status');
+      setError('Failed to update status: ' + (err.response?.data?.msg || err.message));
       console.error('Status update error:', err);
     }
   };
@@ -68,34 +68,30 @@ const Library = () => {
               <div className="card">
                 <div className="card-image">
                   <figure className="image is-4by3">
-                    <img src={item.Game.gambar} alt={item.Game.deskripsi} />
+                    <img src={item.Game.gambar} alt={item.Game.nama} />
                   </figure>
                 </div>
                 <div className="card-content">
                   <div className="media">
                     <div className="media-content">
-                      <p className="title is-4">{item.Game.deskripsi}</p>
+                      <p className="title is-4">{item.Game.nama}</p>
+                      <p className="subtitle is-6">{item.Game.deskripsi}</p>
                     </div>
                   </div>
                   
                   <div className="field">
-                    <label className="label">Status</label>
-                    <div className="buttons has-addons">
+                    <label className="label">Installation Status</label>
+                    <div className="control">
                       <button
-                        className={`button is-small ${item.status === 'belum' ? 'is-primary is-selected' : ''}`}
+                        className={`button is-small ${item.status === 'terinstall' ? 'is-success' : 'is-warning'}`}
                         onClick={() => toggleStatus(item.game_id, item.status)}
-                        disabled={item.status === 'belum'}
                       >
-                        Not Installed
-                      </button>
-                      <button
-                        className={`button is-small ${item.status === 'terinstall' ? 'is-primary is-selected' : ''}`}
-                        onClick={() => toggleStatus(item.game_id, item.status)}
-                        disabled={item.status === 'terinstall'}
-                      >
-                        Installed
+                        {item.status === 'terinstall' ? '✓ Installed' : 'Not Installed'}
                       </button>
                     </div>
+                    <p className="help">
+                      Last updated: {new Date(item.updatedAt).toLocaleString()}
+                    </p>
                   </div>
                   
                   <div className="buttons mt-3">
@@ -105,6 +101,12 @@ const Library = () => {
                     >
                       Remove from Library
                     </button>
+                    <Link 
+                      to={`/games/${item.game_id}`}
+                      className="button is-info is-small"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
               </div>
