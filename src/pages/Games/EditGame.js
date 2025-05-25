@@ -5,12 +5,13 @@ import { getGameDetail, updateGame } from '../../api/games';
 const EditGame = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    gambar: '',
-    harga: '',
-    tag: '',
-    deskripsi: ''
-  });
+const [formData, setFormData] = useState({
+  nama: '',
+  gambar: '',
+  harga: '',
+  tag: '',
+  deskripsi: ''
+});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -19,6 +20,7 @@ const EditGame = () => {
       try {
         const response = await getGameDetail(id);
         setFormData({
+          nama: response.data.nama,
           gambar: response.data.gambar,
           harga: response.data.harga,
           tag: response.data.tag,
@@ -82,6 +84,20 @@ const EditGame = () => {
                 />
               </div>
             </div>
+
+            <div className="field">
+               <label className="label">Game Name</label>
+                <div className="control">
+                  <input
+                    className="input"
+                    type="text"
+                    name="nama"
+                    value={formData.nama}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
             
             <div className="field">
               <label className="label">Price</label>

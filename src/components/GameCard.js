@@ -10,13 +10,14 @@ const GameCard = ({ game }) => {
     <div className="card">
       <div className="card-image">
         <figure className="image is-4by3">
-          <img src={game.gambar} alt={game.deskripsi} />
+          <img src={game.gambar} alt={game.nama} />
         </figure>
       </div>
       <div className="card-content">
         <div className="media">
           <div className="media-content">
-            <p className="title is-4">{game.deskripsi}</p>
+            <p className="title is-4">{game.nama}</p>
+            <p className="subtitle is-6">{game.deskripsi}</p>
             <p className="subtitle is-6">Tags: {game.tag}</p>
           </div>
         </div>

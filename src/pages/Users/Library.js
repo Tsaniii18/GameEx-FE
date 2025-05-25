@@ -11,9 +11,13 @@ const Library = () => {
     const fetchLibrary = async () => {
       try {
         const response = await getLibrary();
-        setLibrary(response.data);
+        if (response.data) {
+          setLibrary(response.data);
+        } else {
+          setError('Received empty library data');
+        }
       } catch (err) {
-        setError('Failed to load library');
+        setError(err.response?.data?.msg || err.message || 'Failed to load library');
       } finally {
         setLoading(false);
       }
@@ -22,14 +26,16 @@ const Library = () => {
     fetchLibrary();
   }, []);
 
-  const handleStatusChange = async (gameId, status) => {
+  const toggleStatus = async (gameId, currentStatus) => {
+    const newStatus = currentStatus === 'belum' ? 'terinstall' : 'belum';
     try {
-      await updateGameStatus(gameId, { status });
+      await updateGameStatus(gameId, { status: newStatus });
       setLibrary(prev => prev.map(item => 
-        item.game_id === gameId ? { ...item, status } : item
+        item.game_id === gameId ? { ...item, status: newStatus } : item
       ));
     } catch (err) {
       setError('Failed to update status');
+      console.error('Status update error:', err);
     }
   };
 
@@ -74,18 +80,21 @@ const Library = () => {
                   
                   <div className="field">
                     <label className="label">Status</label>
-                    <div className="control">
-                      <div className="select is-fullwidth">
-                        <select
-                          value={item.status || 'not_played'}
-                          onChange={(e) => handleStatusChange(item.game_id, e.target.value)}
-                        >
-                          <option value="not_played">Not Played</option>
-                          <option value="playing">Playing</option>
-                          <option value="completed">Completed</option>
-                          <option value="dropped">Dropped</option>
-                        </select>
-                      </div>
+                    <div className="buttons has-addons">
+                      <button
+                        className={`button is-small ${item.status === 'belum' ? 'is-primary is-selected' : ''}`}
+                        onClick={() => toggleStatus(item.game_id, item.status)}
+                        disabled={item.status === 'belum'}
+                      >
+                        Not Installed
+                      </button>
+                      <button
+                        className={`button is-small ${item.status === 'terinstall' ? 'is-primary is-selected' : ''}`}
+                        onClick={() => toggleStatus(item.game_id, item.status)}
+                        disabled={item.status === 'terinstall'}
+                      >
+                        Installed
+                      </button>
                     </div>
                   </div>
                   

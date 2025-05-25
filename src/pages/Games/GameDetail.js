@@ -12,12 +12,20 @@ const GameDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [alreadyOwned, setAlreadyOwned] = useState(false);
 
   useEffect(() => {
     const fetchGame = async () => {
       try {
         const response = await getGameDetail(id);
         setGame(response.data);
+        
+        // Check if user already owns the game
+        if (user) {
+          // You might want to add an API endpoint to check ownership
+          // For now, we'll assume this is checked during purchase
+        }
       } catch (err) {
         setError('Failed to load game details');
       } finally {
@@ -26,17 +34,29 @@ const GameDetail = () => {
     };
 
     fetchGame();
-  }, [id]);
+  }, [id, user]);
 
   const handleBuy = async () => {
+    setIsPurchasing(true);
+    setError('');
+    setMessage('');
+    
     try {
       const response = await buyGame(id);
-      setMessage('Game purchased successfully!');
+      setMessage('Game purchased successfully! Redirecting to your library...');
+      
       setTimeout(() => {
         navigate('/library');
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.msg || 'Failed to purchase game');
+      const errorMsg = err.response?.data?.msg || 'Failed to purchase game';
+      setError(errorMsg);
+      
+      if (errorMsg.includes('already owned')) {
+        setAlreadyOwned(true);
+      }
+    } finally {
+      setIsPurchasing(false);
     }
   };
 
@@ -63,56 +83,111 @@ const GameDetail = () => {
       <div className="columns">
         <div className="column is-half">
           <figure className="image is-16by9">
-            <img src={game.gambar} alt={game.deskripsi} />
+            <img 
+              src={game.gambar} 
+              alt={game.nama} 
+              className="has-rounded-corners"
+              style={{ objectFit: 'cover' }}
+            />
           </figure>
         </div>
         <div className="column is-half">
-          <h1 className="title">{game.deskripsi}</h1>
-          <h2 className="subtitle">Tags: {game.tag}</h2>
-          
-          <div className="content mt-5">
-            {game.discount > 0 ? (
-              <div>
-                <span className="has-text-danger has-text-weight-bold is-size-3">
-                  ${discountedPrice.toFixed(2)}
+          <div className="content">
+            <h1 className="title is-2">{game.nama}</h1>
+            <p className="subtitle is-4 has-text-grey-darker">{game.deskripsi}</p>
+            <div className="tags">
+              {game.tag.split(',').map((tag, index) => (
+                <span key={index} className="tag is-info is-light">
+                  {tag.trim()}
                 </span>
-                <span className="has-text-grey-light ml-2 is-size-4" style={{ textDecoration: 'line-through' }}>
-                  ${game.harga.toFixed(2)}
-                </span>
-                <span className="tag is-danger is-medium ml-2">{game.discount}% OFF</span>
-              </div>
-            ) : (
-              <div className="is-size-3">${game.harga.toFixed(2)}</div>
-            )}
+              ))}
+            </div>
           </div>
 
-          {message && <div className="notification is-success">{message}</div>}
+          <div className="box mt-5">
+            <div className="content">
+              {game.discount > 0 ? (
+                <div className="has-text-centered">
+                  <span className="has-text-danger has-text-weight-bold is-size-3">
+                    ${discountedPrice.toFixed(2)}
+                  </span>
+                  <span className="has-text-grey-light ml-2 is-size-4" style={{ textDecoration: 'line-through' }}>
+                    ${game.harga.toFixed(2)}
+                  </span>
+                  <span className="tag is-danger is-medium ml-2">{game.discount}% OFF</span>
+                </div>
+              ) : (
+                <div className="has-text-centered is-size-3">${game.harga.toFixed(2)}</div>
+              )}
+            </div>
 
-          <div className="buttons mt-5">
-            {isOwner ? (
-              <>
-                <button 
-                  className="button is-info"
-                  onClick={() => navigate(`/games/${game.id}/edit`)}
-                >
-                  Edit Game
-                </button>
-                <button 
-                  className="button is-danger"
-                  onClick={handleDelete}
-                >
-                  Delete Game
-                </button>
-              </>
-            ) : (
-              <button 
-                className="button is-primary is-large"
-                onClick={handleBuy}
-                disabled={message}
-              >
-                {message || 'Buy Now'}
-              </button>
+            {message && (
+              <div className="notification is-success mt-3">
+                <button className="delete" onClick={() => setMessage('')}></button>
+                {message}
+              </div>
             )}
+
+            {error && (
+              <div className="notification is-danger mt-3">
+                <button className="delete" onClick={() => setError('')}></button>
+                {error}
+              </div>
+            )}
+
+            <div className="buttons is-centered mt-5">
+              {isOwner ? (
+                <>
+                  <button 
+                    className="button is-info is-medium"
+                    onClick={() => navigate(`/games/${game.id}/edit`)}
+                  >
+                    <span className="icon">
+                      <i className="fas fa-edit"></i>
+                    </span>
+                    <span>Edit Game</span>
+                  </button>
+                  <button 
+                    className="button is-danger is-medium"
+                    onClick={handleDelete}
+                  >
+                    <span className="icon">
+                      <i className="fas fa-trash"></i>
+                    </span>
+                    <span>Delete Game</span>
+                  </button>
+                </>
+              ) : (
+                <button 
+                  className={`button is-primary is-large ${isPurchasing ? 'is-loading' : ''}`}
+                  onClick={handleBuy}
+                  disabled={message || alreadyOwned}
+                >
+                  {alreadyOwned ? (
+                    <>
+                      <span className="icon">
+                        <i className="fas fa-check"></i>
+                      </span>
+                      <span>Already Owned</span>
+                    </>
+                  ) : message ? (
+                    <>
+                      <span className="icon">
+                        <i className="fas fa-check"></i>
+                      </span>
+                      <span>Purchased!</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="icon">
+                        <i className="fas fa-shopping-cart"></i>
+                      </span>
+                      <span>Buy Now</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

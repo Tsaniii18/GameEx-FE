@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { createGame } from '../../api/games';
 
 const CreateGame = () => {
-  const [formData, setFormData] = useState({
-    gambar: '',
-    harga: '',
-    tag: '',
-    deskripsi: ''
-  });
+ const [formData, setFormData] = useState({
+  nama: '',
+  gambar: '',
+  harga: '',
+  tag: '',
+  deskripsi: ''
+});
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -59,6 +60,20 @@ const CreateGame = () => {
               </div>
             </div>
             
+            <div className="field">
+              <label className="label">Game Name</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="text"
+                  name="nama"
+                  value={formData.nama}
+                  onChange={handleChange}
+                  required
+                />
+              </div> 
+            </div>
+
             <div className="field">
               <label className="label">Price</label>
               <div className="control">
