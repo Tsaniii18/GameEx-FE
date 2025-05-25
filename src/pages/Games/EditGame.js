@@ -5,13 +5,14 @@ import { getGameDetail, updateGame } from '../../api/games';
 const EditGame = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-const [formData, setFormData] = useState({
-  nama: '',
-  gambar: '',
-  harga: '',
-  tag: '',
-  deskripsi: ''
-});
+  const [formData, setFormData] = useState({
+    nama: '',
+    harga: '',
+    tag: '',
+    deskripsi: ''
+  });
+  const [gambarFile, setGambarFile] = useState(null);
+  const [currentImage, setCurrentImage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -21,11 +22,11 @@ const [formData, setFormData] = useState({
         const response = await getGameDetail(id);
         setFormData({
           nama: response.data.nama,
-          gambar: response.data.gambar,
           harga: response.data.harga,
           tag: response.data.tag,
           deskripsi: response.data.deskripsi
         });
+        setCurrentImage(response.data.gambar);
       } catch (err) {
         setError('Failed to load game details');
       } finally {
@@ -41,6 +42,18 @@ const [formData, setFormData] = useState({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setGambarFile(e.target.files[0]);
+      // Preview the new image
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCurrentImage(event.target.result);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -51,10 +64,18 @@ const [formData, setFormData] = useState({
         throw new Error('Price must be a number');
       }
 
-      await updateGame(id, {
-        ...formData,
-        harga: numericPrice
-      });
+      const formDataToSend = new FormData();
+      formDataToSend.append('nama', formData.nama);
+      formDataToSend.append('harga', numericPrice);
+      formDataToSend.append('tag', formData.tag);
+      formDataToSend.append('deskripsi', formData.deskripsi);
+      
+      // Only append the file if a new one was selected
+      if (gambarFile) {
+        formDataToSend.append('gambar', gambarFile);
+      }
+
+      await updateGame(id, formDataToSend);
       navigate(`/games/${id}`);
     } catch (err) {
       setError(err.response?.data?.msg || err.message || 'Failed to update game');
@@ -72,32 +93,37 @@ const [formData, setFormData] = useState({
           
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label className="label">Image URL</label>
+              <label className="label">Game Image</label>
+              {currentImage && (
+                <figure className="image is-128x128 mb-3">
+                  <img src={currentImage} alt="Current game" />
+                </figure>
+              )}
+              <div className="control">
+                <input
+                  className="input"
+                  type="file"
+                  name="gambar"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                />
+                <p className="help">Leave empty to keep current image</p>
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="label">Game Name</label>
               <div className="control">
                 <input
                   className="input"
                   type="text"
-                  name="gambar"
-                  value={formData.gambar}
+                  name="nama"
+                  value={formData.nama}
                   onChange={handleChange}
                   required
                 />
               </div>
             </div>
-
-            <div className="field">
-               <label className="label">Game Name</label>
-                <div className="control">
-                  <input
-                    className="input"
-                    type="text"
-                    name="nama"
-                    value={formData.nama}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
             
             <div className="field">
               <label className="label">Price</label>

@@ -9,7 +9,13 @@ export const createGame = (formData) => {
     }
   });
 };
-export const updateGame = (id, gameData) => api.put(`/games/${id}`, gameData);
+export const updateGame = (id, formData) => {
+  return api.put(`/games/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
 export const applyDiscount = (id, {discount}) => api.patch(`/games/${id}/discount`, { discount });
 export const getSalesHistory = (id) => api.get(`/games/${id}/sales`);
 export const deleteGame = (id) => api.delete(`/games/${id}`);
