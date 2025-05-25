@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { getProfile } from '../api/users';
 import api from '../api/axios';
 
 const AuthContext = createContext();
@@ -9,22 +10,24 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-          const decoded = jwtDecode(token);
-          setUser(decoded);
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-      } finally {
-        setLoading(false);
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        // const decoded = jwtDecode(token);
+        const res = await getProfile();
+        setUser(res.data);
       }
-    };
+    } catch (error) {
+      console.error('Auth check error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    checkAuth();
-  }, []);
+  checkAuth();
+}, []);
+
 
   const login = async (email, password) => {
     try {
@@ -60,7 +63,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
