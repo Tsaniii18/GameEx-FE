@@ -23,7 +23,13 @@ const GameCard = ({ game }) => {
               @{game.User?.username || 'unknown'}
             </p>
 
-            <p className="subtitle is-6" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+           <p className="subtitle is-6" style={{ 
+              display: '-webkit-box',
+              WebkitLineClamp: 3, 
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
               {game.deskripsi}
             </p>
             <div className="subtitle is-7 has-text-grey" style={{ marginTop: '0.5rem' }}>
