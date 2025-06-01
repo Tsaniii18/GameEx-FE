@@ -27,7 +27,7 @@ const Library = () => {
   }, []);
 
   const toggleStatus = async (gameId, currentStatus) => {
-    const newStatus = currentStatus === 'notinstalled' ? 'terinstall' : 'notinstalled';
+    const newStatus = currentStatus === 'belum' ? 'terinstall' : 'belum';
     try {
       await updateGameStatus(gameId, { status: newStatus });
       setLibrary(prev => prev.map(item =>
