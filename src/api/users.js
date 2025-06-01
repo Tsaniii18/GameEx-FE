@@ -1,6 +1,12 @@
 import api from './axios';
 
-export const updateProfile = (userData) => api.patch('/users/profile', userData);
+export const updateProfile = (formData) => {
+  return api.put('/users/profile', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
 export const buyGame = ({gameId, paymentMethod}) => api.post('/users/buy', { gameId, paymentMethod });
 export const updateGameStatus = (gameId, {status}) => api.patch(`/users/library/${gameId}`, { status });
 export const deleteFromLibrary = (gameId) => api.delete(`/users/library/${gameId}`);

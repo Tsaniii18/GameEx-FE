@@ -7,10 +7,13 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    foto_profil: '',
     password: '',
     confirmPassword: ''
   });
+  const [fotoProfilFile, setFotoProfilFile] = useState(null);
+  const [fotoProfilPreview, setFotoProfilPreview] = useState(
+    'https://marketplace.canva.com/EAFG8MJkQBI/2/0/1600w/canva-inspiration-professional-instagram-profile-picture-fF81hMsjbhQ.jpg'
+  );
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -20,14 +23,31 @@ const Profile = () => {
         ...prev,
         username: authUser.username || '',
         email: authUser.email || '',
-        foto_profil: authUser.foto_profil || ''
+        password: '', // Ensure password fields are empty
+        confirmPassword: '' // Ensure password fields are empty
       }));
+      if (authUser.foto_profil) {
+        setFotoProfilPreview(authUser.foto_profil);
+      }
     }
   }, [authUser]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFotoProfilFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFotoProfilPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -41,23 +61,25 @@ const Profile = () => {
     }
 
     try {
-      const updateData = {
-        username: formData.username,
-        email: formData.email,
-        foto_profil: formData.foto_profil,
-        ...(formData.password && { password: formData.password })
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append('username', formData.username);
+      formDataToSend.append('email', formData.email);
+      if (formData.password) {
+        formDataToSend.append('password', formData.password);
+      }
+      if (fotoProfilFile) {
+        formDataToSend.append('foto_profil', fotoProfilFile);
+      }
 
-      const response = await updateProfile(updateData);
+      const response = await updateProfile(formDataToSend);
       setMessage(response.data.msg || 'Profile updated successfully');
 
-    if (authUser) {
-      setAuthUser(response.data.user);
+      if (authUser) {
         setAuthUser({
           ...authUser,
           username: formData.username,
           email: formData.email,
-          foto_profil: formData.foto_profil
+          foto_profil: response.data.user.foto_profil || fotoProfilPreview
         });
       }
     } catch (err) {
@@ -83,18 +105,39 @@ const Profile = () => {
         <div className="box">
           <h1 className="title has-text-centered">Profile Settings</h1>
 
-          {/* Profile picture preview */}
-          {formData.foto_profil && (
-            <div className="has-text-centered mb-4">
-              <figure className="image is-128x128 is-inline-block">
-                <img
-                  src={formData.foto_profil}
-                  alt="Profile preview"
-                  className="is-rounded"
+          {/* Profile picture preview and upload - Made larger */}
+          <div className="has-text-centered mb-4">
+            <figure className="image is-256x256 is-inline-block">
+              <img
+                src={fotoProfilPreview}
+                alt="Profile preview"
+                className="is-rounded"
+                style={{
+                  width: '256px',
+                  height: '256px',
+                  objectFit: 'cover'
+                }}
+              />
+            </figure>
+            <div className="file is-centered mt-3">
+              <label className="file-label">
+                <input
+                  className="file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
                 />
-              </figure>
+                <span className="file-cta">
+                  <span className="file-icon">
+                    <i className="fas fa-upload"></i>
+                  </span>
+                  <span className="file-label">
+                    {fotoProfilFile ? 'Change Photo' : 'Upload Photo'}
+                  </span>
+                </span>
+              </label>
             </div>
-          )}
+          </div>
 
           {message && (
             <div className="notification is-success">
@@ -140,20 +183,6 @@ const Profile = () => {
             </div>
 
             <div className="field">
-              <label className="label">Profile Picture URL</label>
-              <div className="control">
-                <input
-                  className="input"
-                  type="url"
-                  name="foto_profil"
-                  value={formData.foto_profil}
-                  onChange={handleChange}
-                  placeholder="https://example.com/profile.jpg"
-                />
-              </div>
-            </div>
-
-            <div className="field">
               <label className="label">New Password (leave blank to keep current)</label>
               <div className="control">
                 <input
@@ -163,6 +192,7 @@ const Profile = () => {
                   value={formData.password}
                   onChange={handleChange}
                   minLength="6"
+                  placeholder="Enter new password"
                 />
               </div>
             </div>
@@ -177,6 +207,7 @@ const Profile = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   minLength="6"
+                  placeholder="Confirm new password"
                 />
               </div>
             </div>
